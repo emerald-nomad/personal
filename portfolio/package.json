@@ -10,6 +10,7 @@
     "codegen": "graphql-codegen --config codegen.ts"
   },
   "dependencies": {
+    "@graphql-codegen/cli": "^5.0.5",
     "@headlessui/react": "^2.2.0",
     "@mapbox/rehype-prism": "^0.9.0",
     "@mdx-js/loader": "^3.1.0",
