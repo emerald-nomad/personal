@@ -1,22 +1,54 @@
 import { Container } from "@/components/Container";
-import { client } from "@/sanity/client"
 import { formatDate } from "@/lib/formatDate";
-import { Article } from "@/types";
 import { ArticleBackButton } from "@/components/ArticleBackButton";
 import clsx from "clsx";
 import { PortableText } from "next-sanity";
-import Prism from "prismjs"
 import { CodeBlock } from "@/components/CodeBlock";
+import { execute, graphql } from "@/graphql";
+import imageUrlBuilder from '@sanity/image-url'
+import Image from "next/image";
+import { client } from "@/sanity/client";
 
 export async function generateStaticParams() {
-  const articles = await client.fetch<Article[]>("*[_type == 'article']")
-  return articles.map(a => ({slug: a.slug.current}));
+  const query = graphql(`query ArticleSlugs {
+      allArticle {
+        slug {
+          current
+        }
+      }
+  }`);
+  
+  const articles = (await execute(query)).allArticle;
+
+  return articles.map(a => ({slug: a.slug!.current}));
 }
 
 export default async function ArticlePage({params}: {params: Promise<{slug: string}>}) {
   const {slug} = await params;
 
-  const article = await client.fetch<Article>(`*[_type == "article" && slug.current == $slug][0]`, {slug});
+  const query = graphql(`
+    query Article($slug: String!) {
+      allArticle(
+        where: {
+          slug: {
+            current: {
+              eq: $slug
+            }
+          }
+        }
+      ) {
+        title
+        description
+        slug {
+          current
+        }
+        publishedAt
+        bodyRaw
+      }
+    }
+  `);
+
+  const article = (await execute(query, {slug})).allArticle[0];
 
   return  (
     <Container className="mt-16 lg:mt-32">
@@ -41,15 +73,15 @@ export default async function ArticlePage({params}: {params: Promise<{slug: stri
             </Prose> */}
              <div className={clsx("mt-8", 'prose dark:prose-invert')} data-mdx-content> 
                 <PortableText 
-                  value={article.body} 
+                  value={article.bodyRaw} 
                   components={{
                     types: {
                       code: ({value}) => {
                         return <CodeBlock code={value.code} language={value.language} />
                       },
                       image: ({value}) => {
-                        console.log(value)
-                        return <div></div>
+                        const url = imageUrlBuilder(client).image(value.asset).url();
+                        return <img src={url} alt=""  />
                       }
                     }
                   }} 
@@ -60,25 +92,4 @@ export default async function ArticlePage({params}: {params: Promise<{slug: stri
       </div>
     </Container>
   );
-}
-
-function mapElements(arr: any[]) {
-  const els: any[] = [];
-  arr.forEach(el => {
-    console.log(el)
-    if (el._type === "block") {
-      el.children.forEach((c: any) => {
-        if (c._type === 'span') {
-          
-          els.push(<span key={c._key}>{c.text}</span>)
-        }
-      })
-    }
-
-    if (el._type === 'code') {
-      els.push(<pre key={el._key} className="language-c">{el.code}</pre>)
-    }
-  })
-
-  return els;
 }

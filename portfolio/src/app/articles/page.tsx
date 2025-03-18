@@ -2,13 +2,26 @@ import { type Metadata } from 'next'
 
 import { Card } from '@/components/Card'
 import { SimpleLayout } from '@/components/SimpleLayout'
-import { type ArticleWithSlug, getAllArticles } from '@/lib/articles'
 import { formatDate } from '@/lib/formatDate'
-import { client } from '@/sanity/client'
-import { Article as IArticle } from "@/types";
+import { execute, graphql, Article as IArticle } from '@/graphql'
 
 export default async function ArticlesIndex() {
-  const articles = await client.fetch<IArticle[]>("*[_type == 'article']")
+  const query = graphql(`query Articles {
+    allArticle(
+      sort: {
+        publishedAt: DESC
+      }
+    ) {
+      title
+      description
+      publishedAt
+      slug {
+        current
+      }
+    }
+  }`);
+
+  const articles = (await execute(query)).allArticle;
 
   return (
     <SimpleLayout
@@ -18,7 +31,7 @@ export default async function ArticlesIndex() {
       <div className="md:border-l md:border-zinc-100 md:pl-6 md:dark:border-zinc-700/40">
         <div className="flex max-w-3xl flex-col space-y-16">
           {articles.map((article) => (
-            <Article key={article.slug.current} article={article} />
+            <Article key={article.slug!.current} article={article} />
           ))}
         </div>
       </div>
@@ -30,7 +43,7 @@ function Article({ article }: { article: IArticle }) {
   return (
     <article className="md:grid md:grid-cols-4 md:items-baseline">
       <Card className="md:col-span-3">
-        <Card.Title href={`/articles/${article.slug.current}`}>
+        <Card.Title href={`/articles/${article.slug!.current}`}>
           {article.title}
         </Card.Title>
         <Card.Eyebrow

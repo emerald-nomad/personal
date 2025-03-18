@@ -9,7 +9,7 @@ import {schemaTypes} from './schemaTypes'
 export default defineConfig({
   name: 'default',
   title: 'Portfolio',
-  projectId: '',
+  projectId: process.env.SANITY_STUDIO_SANITY_PROJECT_ID as string,
   dataset: 'production',
   plugins: [
     structureTool(),
