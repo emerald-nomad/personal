@@ -1,25 +1,21 @@
 import { Card } from '@/components/Card'
 import { SimpleLayout } from '@/components/SimpleLayout'
 import { formatDate } from '@/lib/formatDate'
-import { execute, graphql, Article as IArticle } from '@/graphql'
+import { GET_ARTICLES_QUERYResult } from '@/sanity/types'
+import { defineQuery } from 'next-sanity'
+import { client } from '@/sanity/client'
+
+const GET_ARTICLES_QUERY = defineQuery(`
+  *[_type == 'article'] | order(publishedAt desc) {
+    title, 
+    description,
+    publishedAt,
+    slug                                
+  }
+ `)
 
 export default async function ArticlesIndex() {
-  const query = graphql(`query Articles {
-    allArticle(
-      sort: {
-        publishedAt: DESC
-      }
-    ) {
-      title
-      description
-      publishedAt
-      slug {
-        current
-      }
-    }
-  }`);
-
-  const articles = (await execute(query)).allArticle;
+  const articles = await client.fetch(GET_ARTICLES_QUERY)
 
   return (
     <SimpleLayout
@@ -37,7 +33,7 @@ export default async function ArticlesIndex() {
   )
 }
 
-function Article({ article }: { article: IArticle }) {
+function Article({ article }: { article: GET_ARTICLES_QUERYResult[0] }) {
   return (
     <article className="md:grid md:grid-cols-4 md:items-baseline">
       <Card className="md:col-span-3">
@@ -46,21 +42,21 @@ function Article({ article }: { article: IArticle }) {
         </Card.Title>
         <Card.Eyebrow
           as="time"
-          dateTime={article.publishedAt}
+          dateTime={article.publishedAt!}
           className="md:hidden"
           decorate
         >
-          {formatDate(article.publishedAt)}
+          {formatDate(article.publishedAt!)}
         </Card.Eyebrow>
         <Card.Description>{article.description}</Card.Description>
         <Card.Cta>Read article</Card.Cta>
       </Card>
       <Card.Eyebrow
         as="time"
-        dateTime={article.publishedAt}
+        dateTime={article.publishedAt!}
         className="mt-1 max-md:hidden"
       >
-        {formatDate(article.publishedAt)}
+        {formatDate(article.publishedAt!)}
       </Card.Eyebrow>
     </article>
   )

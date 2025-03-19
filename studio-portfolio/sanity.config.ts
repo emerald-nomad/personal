@@ -1,5 +1,6 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
+import {presentationTool} from 'sanity/presentation'
 import {visionTool} from '@sanity/vision'
 import {codeInput} from '@sanity/code-input'
 import {media} from 'sanity-plugin-media'
@@ -32,6 +33,15 @@ export default defineConfig({
             import('@codemirror/legacy-modes/mode/clike').then(({c}) => StreamLanguage.define(c)),
         },
       ],
+    }),
+    presentationTool({
+      previewUrl: {
+        origin: process.env.SANITY_STUDIO_PREVIEW_ORIGIN,
+        preview: '/',
+        previewMode: {
+          enable: '/api/draft-mode/enable',
+        },
+      },
     }),
   ],
   schema: {

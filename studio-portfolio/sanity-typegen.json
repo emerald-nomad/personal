@@ -1,0 +1,5 @@
+{
+  "path": "../portfolio/src/**/*.{ts,tsx,js,jsx}",
+  "schema": "schema.json",
+  "generates": "../portfolio/src/sanity/types.ts"
+}
