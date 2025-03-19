@@ -6,6 +6,7 @@ import { defineQuery, PortableText } from "next-sanity";
 import { CodeBlock } from "@/components/CodeBlock";
 import imageUrlBuilder from '@sanity/image-url'
 import { client } from "@/sanity/client";
+import { draftMode } from "next/headers";
 
 const GET_ARTICLE_SLUGS_QUERY = defineQuery(`
   *[_type == 'article'] {
@@ -23,8 +24,19 @@ const GET_ARTICLE_QUERY = defineQuery(`*[_type == "article" && slug.current == $
 
 export default async function ArticlePage({params}: {params: Promise<{slug: string}>}) {
   const {slug} = await params;
+  const { isEnabled } = await draftMode();
 
-  const article = await client.fetch(GET_ARTICLE_QUERY, {slug})
+  const article = await client.fetch(
+    GET_ARTICLE_QUERY, 
+    {slug},
+    isEnabled
+      ? {
+          perspective: "previewDrafts",
+          useCdn: false,
+          stega: true,
+        }
+      : undefined
+  )
 
   if (!article) {
     return null;
