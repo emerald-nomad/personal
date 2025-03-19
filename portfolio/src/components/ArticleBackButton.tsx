@@ -5,8 +5,8 @@ import { AppContext } from "./Providers";
 import { useRouter } from "next/navigation";
 
 export function ArticleBackButton() {
-    let router = useRouter()
-    let { previousPathname } = useContext(AppContext)
+    const router = useRouter()
+    const { previousPathname } = useContext(AppContext)
     
   return (
     <>

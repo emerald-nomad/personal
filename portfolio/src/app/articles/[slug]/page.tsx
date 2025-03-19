@@ -6,7 +6,6 @@ import { PortableText } from "next-sanity";
 import { CodeBlock } from "@/components/CodeBlock";
 import { execute, graphql } from "@/graphql";
 import imageUrlBuilder from '@sanity/image-url'
-import Image from "next/image";
 import { client } from "@/sanity/client";
 
 export async function generateStaticParams() {
